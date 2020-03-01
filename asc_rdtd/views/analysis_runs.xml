@@ -1,0 +1,137 @@
+<odoo>
+  <data>
+  
+    <record model="ir.actions.act_window" id="asc_rdtd.action_analysis">
+        <field name="name">Primer3 Runs</field>
+        <field name="res_model">asc_rdtd.asc_analysis</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.ui.view" id="asc_rdtd.analysis_list">
+      <field name="name">asc_analysis list</field>
+      <field name="model">asc_rdtd.asc_analysis</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="asc_rdtd_analysis_form_view">
+        <field name="name">asc_rdtd.form</field>
+        <field name="model">asc_rdtd.asc_analysis</field>
+        <field name="arch" type="xml">
+            <form string="Analysis Form">
+              <sheet>
+                <group colspan="4">
+                    <group colspan="1" col="2">
+                        <separator string="General" colspan="2"/>
+                        <field name="name"/>
+                        <field name="project"/>
+                        <field name="species"/>
+                    </group>
+
+                    <group colspan="1" col="2">
+                        <separator string="Notes" colspan="2"/>
+                        <field name="notes" nolabel="1"/>
+                    </group>
+
+                    <group colspan="2" col="2">
+                        <separator string="gRNAs" colspan="2"/>
+                        <field name="grnas" nolabel="1">
+                          <tree editable="bottom">
+                            <field name="chromosome"/>
+                            <field name="sequence"/>
+                            <field name="cut_site"/>
+                          </tree>
+                        </field>
+                    </group>
+                    <group colspan="2">
+                      <button name="run_analysis" type="object" string="Run" />
+                    </group>
+                    <group colspan="2" col="2">
+                        <separator string="Results" colspan="2"/>
+                        <field name="primers" nolabel="1">
+                          <tree>
+                            <field name="grna_sequence"/>
+                            <field name="primer5_seq"/>
+                            <field name="primer3_seq"/>
+                            <field name="tm5"/>
+                            <field name="tm3"/>
+                            <field name="expected_band_size"/>
+                          </tree>
+                        </field>
+                    </group>
+                </group>
+              </sheet>
+                <!-- <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="value"/>
+                        <field name="value2"/>
+                        <field name="description"/>
+                    </group>
+                </sheet> -->
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="asc_rdtd_grnas_form_view">
+        <field name="name">asc_rdtd.asc_grnas_form</field>
+        <field name="model">asc_rdtd.asc_analysis.asc_grnas</field>
+        <field name="arch" type="xml">
+            <form string="gRNA Form">
+              <sheet>
+                <group colspan="4">
+                    <group colspan="1" col="2">
+                        <separator string="General" colspan="2"/>
+                        <field name="chromosome"/>
+                        <field name="sequence" />
+                    </group>
+                </group>
+              </sheet>
+                <!-- <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="value"/>
+                        <field name="value2"/>
+                        <field name="description"/>
+                    </group>
+                </sheet> -->
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="asc_rdtd_grnas_form_view">
+        <field name="name">asc_rdtd.asc_primers_form</field>
+        <field name="model">asc_rdtd.asc_analysis.asc_primers</field>
+        <field name="arch" type="xml">
+            <form string="Primers Form">
+              <sheet>
+                <group colspan="4">
+                    <group colspan="1" col="2">
+                        <separator string="General" colspan="2"/>
+                            <field name="grna_sequence"/>
+                            <field name="primer5_seq"/>
+                            <field name="primer3_seq"/>
+                            <field name="tm5"/>
+                            <field name="tm3"/>
+                            <field name="expected_band_size"/>
+                            <field name="ref_sequence"/>
+                    </group>
+                </group>
+              </sheet>
+                <!-- <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="value"/>
+                        <field name="value2"/>
+                        <field name="description"/>
+                    </group>
+                </sheet> -->
+            </form>
+        </field>
+    </record>
+
+  </data>
+</odoo>

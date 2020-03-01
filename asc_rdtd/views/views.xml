@@ -1,0 +1,46 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+  
+    <!-- actions opening views on models -->
+
+    
+   
+
+    <!-- server action to the one above -->
+<!--     
+    <record model="ir.actions.server" id="asc_rdtd.action_server">
+      <field name="name">asc_rdtd server</field>
+      <field name="model_id" ref="model_asc_rdtd_asc_plasmid"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": self._name,
+        }
+      </field>
+    </record>
+    -->
+
+    <!-- Top menu item -->
+    
+    <menuitem name="RD/TD" id="asc_rdtd.menu_root" web_icon="asc_rdtd,static/description/icon.png"/>
+    <menuitem name="Plasmids" id="asc_rdtd.menu_1" parent="asc_rdtd.menu_root"  action="asc_rdtd.action_plasmid" sequence="1"/>
+    <menuitem name="Viruses" id="asc_rdtd.menu_2" parent="asc_rdtd.menu_root" action="asc_rdtd.action_virus" sequence="2"/>
+    <menuitem name="Analysis Runs" id="asc_rdtd.menu_3" parent="asc_rdtd.menu_root" sequence="3"/>
+    <menuitem name="Run Primer3" id="asc_rdtd.menu_4" parent="asc_rdtd.menu_3" action="asc_rdtd.action_analysis" sequence="3"/>
+
+
+ 
+    <!-- menu categories -->
+    
+    <!-- actions -->
+    
+    <!-- <menuitem name="List" id="asc_rdtd.menu_1_list" parent="asc_rdtd.menu_1"
+              action="asc_rdtd.action_window"/> -->
+    <!-- <menuitem name="Server to list" id="asc_rdtd" parent="asc_rdtd.menu_2"
+              action="asc_rdtd.action_server"/> -->
+   
+  </data>
+</odoo>

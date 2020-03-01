@@ -1,0 +1,76 @@
+<odoo>
+  <data>
+  
+    <record model="ir.actions.act_window" id="asc_rdtd.action_virus">
+        <field name="name">Viruses</field>
+        <field name="res_model">asc_rdtd.asc_virus</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.ui.view" id="asc_rdtd.virus_list">
+      <field name="name">asc_virus list</field>
+      <field name="model">asc_rdtd.asc_virus</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <!-- <field name="other_name"/> -->
+          <field name="lot"/>
+          <field name="project"/>
+          <field name="manufacturer"/>
+          <field name="manufacture_date"/>
+          <field name="received_by"/>
+          <field name="original_titer"/>
+          <field name="vials"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="asc_rdtd_virus_form_view">
+        <field name="name">asc_rdtd.form</field>
+        <field name="model">asc_rdtd.asc_virus</field>
+        <field name="arch" type="xml">
+            <form string="Virus Form">
+              <sheet>
+                <group colspan="4">
+                    <group colspan="1" col="2">
+                        <separator string="General" colspan="2"/>
+                        <field name="name"/>
+                        <field name="lot"/>
+                        <field name="project"/>
+                        <field name="received_by"/>
+                        <field name="received_date"/>
+                    </group>
+
+                    <group colspan="1" col="2">
+                        <separator string="Advanced" colspan="2"/>
+                        <field name="manufacturer"/>
+                        <field name="manufacture_date"/>
+                        <field name="original_titer"/>
+                        <field name="volume"/>
+                        <field name="vials"/>
+                    </group>
+
+                    <group colspan="2" col="2">
+                        <separator string="Notes" colspan="2"/>
+                        <field name="notes"/>
+                    </group>
+                    <group colspan="2" col="2">
+                      <separator string="Attachments" colspan="2"/>
+                      <field name="attachment_ids" nolabel="1" widget="many2many_binary"/>
+                    </group>
+                </group>
+              </sheet>
+                <!-- <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="value"/>
+                        <field name="value2"/>
+                        <field name="description"/>
+                    </group>
+                </sheet> -->
+            </form>
+        </field>
+    </record>
+
+  </data>
+</odoo>

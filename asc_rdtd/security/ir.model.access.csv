@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_asc_rdtd_asc_plasmid,asc_rdtd.asc_plasmid,model_asc_rdtd_asc_plasmid,,1,1,1,1
+access_asc_rdtd_asc_virus,asc_rdtd.asc_virus,model_asc_rdtd_asc_virus,,1,1,1,1
+access_asc_rdtd_asc_analysis,asc_rdtd.asc_analysis,model_asc_rdtd_asc_analysis,,1,1,1,1
+access_asc_rdtd_asc_analysis_asc_grnas,asc_rdtd.asc_analysis.asc_grnas,model_asc_rdtd_asc_analysis_asc_grnas,,1,1,1,1
+access_asc_rdtd_asc_analysis_asc_primers,asc_rdtd.asc_analysis.asc_primers,model_asc_rdtd_asc_analysis_asc_primers,,1,1,1,1

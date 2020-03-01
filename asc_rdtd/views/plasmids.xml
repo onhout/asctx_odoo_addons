@@ -1,0 +1,82 @@
+<odoo>
+  <data>
+
+    <record model="ir.actions.act_window" id="asc_rdtd.action_plasmid">
+      <field name="name">Plamids</field>
+      <field name="res_model">asc_rdtd.asc_plasmid</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    
+
+    <record model="ir.ui.view" id="asc_rdtd.plasmid_list">
+      <field name="name">asc_plasmid list</field>
+      <field name="model">asc_rdtd.asc_plasmid</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <!-- <field name="other_name"/> -->
+          <field name="plasmid_id"/>
+          <field name="project"/>
+          <field name="application"/>
+          <field name="components"/>
+          <field name="antibiotics"/>
+          <!-- <field name="source"/> -->
+          <!-- <field name="backbone"/> -->
+          <field name="box"/>
+          <!-- <field name="concentration"/> -->
+          <!-- <field name="description"/> -->
+          <field name="notes"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="asc_rdtd_plasmid_form_view">
+        <field name="name">asc_rdtd.form</field>
+        <field name="model">asc_rdtd.asc_plasmid</field>
+        <field name="arch" type="xml">
+            <form string="Plasmid Form">
+              <sheet>
+                <group colspan="4">
+                    <group colspan="1" col="2">
+                        <separator string="General" colspan="2"/>
+                        <field name="name"/>
+                        <field name="other_name"/>
+                        <field name="plasmid_id"/>
+                        <field name="project"/>
+                        <field name="concentration"/>
+                    </group>
+
+                    <group colspan="1" col="2">
+                        <separator string="Advanced" colspan="2"/>
+                        <field name="source"/>
+                        <field name="antibiotics"/>
+                        <field name="backbone"/>
+                        <field name="box"/>
+                        <field name="components"/>
+                        <field name="application"/>
+                    </group>
+
+                    <group colspan="2" col="2">
+                        <separator string="Notes" colspan="2"/>
+                        <field name="description"/>
+                        <field name="notes"/>
+                    </group>
+                    <group colspan="2" col="2">
+                      <separator string="Attachments" colspan="2"/>
+                      <field name="attachment_ids" nolabel="1" widget="many2many_binary"/>
+                    </group>
+                </group>
+              </sheet>
+                <!-- <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="value"/>
+                        <field name="value2"/>
+                        <field name="description"/>
+                    </group>
+                </sheet> -->
+            </form>
+        </field>
+    </record>
+ </data>
+</odoo>
