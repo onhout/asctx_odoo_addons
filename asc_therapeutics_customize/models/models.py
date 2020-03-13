@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions, _
 
 #Extending the purchase order model, uses Catalog Number by default
 class PurchaseOrderLine(models.Model):
@@ -22,7 +22,88 @@ class PurchaseOrder(models.Model):
         ('cancel', 'Cancelled'),
         ('received', 'Received')
     ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
+    approved_by = fields.Many2many('res.users', string='Approved By', readonly=True)
 
+    def send_confirmation(self, email_list):
+        for order in self:
+            line_str = ""
+            for line in order.order_line:
+                line_str += "{} x {}<br>".format(line.name, line.product_qty)
+
+            body = """Dear {}, 
+            <p>You have <a href='http://admin.asctherapeutics.com/web#id={}&amp;model=purchase.order&amp;view_type=form'>{}</a> waiting to be approved</p>
+            <strong>Ordered items:</strong>
+            <p>{}</p>
+            <p><strong>Total: ${}</strong></p>
+            <p>Best Regards,</p>
+            """.format(order.user_id.employee_ids.parent_id.user_id.name, order.id, order.name, line_str, order.amount_total)
+            template_obj = self.env['mail.mail']
+            template_data = {
+                'subject': 'Purchase Order Approval Request: ' + order.name,
+                'body_html': body,
+                'email_from': "IT@asctherapeutics.com",
+                'email_to': ", ".join(email_list)
+                }
+            template_id = template_obj.create(template_data)
+            template_obj.send(template_id)
+
+    def button_approve(self, force=False):
+        employee = self.env['hr.employee']
+        acc_manager = employee.search([('job_id','like','Accounting Manager')]).user_id
+        ceo = employee.search([('job_id','like','CEO')]).user_id
+
+        for order in self:
+            department_head = employee.search(['&', ('category_ids','like','Department Head'), ('department_id', '=', order.user_id.employee_ids.department_id.name)]).user_id
+            if order.amount_total <= 5000:
+                self.write({'approved_by': [(4, self.env.user.id)]})
+                self.write({'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
+                self.filtered(lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
+            elif order.amount_total > 5000 and order.amount_total <= 10000:
+                self.write({'approved_by': [(4, self.env.user.id)]})
+                if acc_manager in order.approved_by and department_head in order.approved_by:
+                    self.write({'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
+                    self.filtered(lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
+            elif order.amount_total > 10000:
+                self.write({'approved_by': [(4, self.env.user.id)]})
+                if acc_manager in order.approved_by and department_head in order.approved_by and ceo in order.approved_by:
+                    self.write({'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
+                    self.filtered(lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
+        return {}
+
+    def button_confirm(self):
+        employee = self.env['hr.employee']
+        acc_manager = employee.search([('job_id','like','Accounting Manager')]).user_id
+        ceo = employee.search([('job_id','like','CEO')]).user_id
+
+        for order in self:
+            if order.state not in ['draft', 'sent']:
+                continue
+            order._add_supplier_to_product()
+
+            department_head = employee.search(['&', ('category_ids','like','Department Head'), ('department_id', '=', order.user_id.employee_ids.department_id.name)]).user_id
+
+            if order.amount_total <= 5000:
+                if order.company_id.po_double_validation == 'one_step'\
+                    or (order.company_id.po_double_validation == 'two_step'\
+                        and order.amount_total < self.company_id.currency_id._convert(
+                            order.company_id.po_double_validation_amount, order.currency_id, order.company_id, order.date_order or fields.Date.today()))\
+                    or order.user_has_groups('purchase.group_purchase_manager'):
+                    order.button_approve()
+                else:
+                    email_list = [department_head.email_formatted]
+                    self.send_confirmation(email_list)
+                    order.write({'state': 'to approve'})
+            elif order.amount_total > 5000 and order.amount_total <= 10000:
+                email_list = [acc_manager.email_formatted, department_head.email_formatted]
+                self.send_confirmation(email_list)
+                order.write({'state': 'to approve'})
+            elif order.amount_total > 10000:
+                email_list = [acc_manager.email_formatted, ceo.email_formatted, department_head.email_formatted]
+                self.send_confirmation(email_list)
+                order.write({'state': 'to approve'})
+        return True
+
+        
 #Add interaction for setting received status after the transfer is set to done
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
