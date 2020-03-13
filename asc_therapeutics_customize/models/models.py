@@ -24,7 +24,8 @@ class PurchaseOrder(models.Model):
     ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     approved_by = fields.Many2many('res.users', string='Approved By', readonly=True)
 
-    def send_confirmation(self, email_list):
+    def send_confirmation(self, email_list, department_head):
+        employee = self.env['hr.employee']
         for order in self:
             line_str = ""
             for line in order.order_line:
@@ -36,7 +37,7 @@ class PurchaseOrder(models.Model):
             <p>{}</p>
             <p><strong>Total: ${}</strong></p>
             <p>Best Regards,</p>
-            """.format(order.user_id.employee_ids.parent_id.user_id.name, order.id, order.name, line_str, order.amount_total)
+            """.format(department_head.name, order.id, order.name, line_str, order.amount_total)
             template_obj = self.env['mail.mail']
             template_data = {
                 'subject': 'Purchase Order Approval Request: ' + order.name,
@@ -74,14 +75,12 @@ class PurchaseOrder(models.Model):
         employee = self.env['hr.employee']
         acc_manager = employee.search([('job_id','like','Accounting Manager')]).user_id
         ceo = employee.search([('job_id','like','CEO')]).user_id
+        department_head = employee.search(['&', ('category_ids','like','Department Head'), ('department_id', '=', order.user_id.employee_ids.department_id.name)]).user_id
 
         for order in self:
             if order.state not in ['draft', 'sent']:
                 continue
             order._add_supplier_to_product()
-
-            department_head = employee.search(['&', ('category_ids','like','Department Head'), ('department_id', '=', order.user_id.employee_ids.department_id.name)]).user_id
-
             if order.amount_total <= 5000:
                 if order.company_id.po_double_validation == 'one_step'\
                     or (order.company_id.po_double_validation == 'two_step'\
@@ -91,15 +90,15 @@ class PurchaseOrder(models.Model):
                     order.button_approve()
                 else:
                     email_list = [department_head.email_formatted]
-                    self.send_confirmation(email_list)
+                    self.send_confirmation(email_list, department_head)
                     order.write({'state': 'to approve'})
             elif order.amount_total > 5000 and order.amount_total <= 10000:
                 email_list = [acc_manager.email_formatted, department_head.email_formatted]
-                self.send_confirmation(email_list)
+                self.send_confirmation(email_list, department_head)
                 order.write({'state': 'to approve'})
             elif order.amount_total > 10000:
                 email_list = [acc_manager.email_formatted, ceo.email_formatted, department_head.email_formatted]
-                self.send_confirmation(email_list)
+                self.send_confirmation(email_list, department_head)
                 order.write({'state': 'to approve'})
         return True
 
