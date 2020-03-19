@@ -24,29 +24,31 @@ class PurchaseOrder(models.Model):
     ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     approved_by = fields.Many2many('res.users', string='Approved By', readonly=True)
 
-    def send_confirmation(self, email_list, department_head):
+    def send_confirmation(self, mailing_users):
+
         employee = self.env['hr.employee']
         for order in self:
             line_str = ""
             for line in order.order_line:
                 line_str += "{} x {}<br>".format(line.name, line.product_qty)
 
-            body = """Dear {}, 
-            <p>You have <a href='http://admin.asctherapeutics.com/web#id={}&amp;model=purchase.order&amp;view_type=form'>{}</a> waiting to be approved</p>
-            <strong>Ordered items:</strong>
-            <p>{}</p>
-            <p><strong>Total: ${}</strong></p>
-            <p>Best Regards,</p>
-            """.format(department_head.name, order.id, order.name, line_str, order.amount_total)
-            template_obj = self.env['mail.mail']
-            template_data = {
-                'subject': 'Purchase Order Approval Request: ' + order.name,
-                'body_html': body,
-                'email_from': "IT@asctherapeutics.com",
-                'email_to': ", ".join(email_list)
-                }
-            template_id = template_obj.create(template_data)
-            template_obj.send(template_id)
+            for user in mailing_users:
+                body = """Dear {}, 
+                <p>You have <a href='http://admin.asctherapeutics.com/web#id={}&amp;model=purchase.order&amp;view_type=form'>{}</a> waiting to be approved</p>
+                <strong>Ordered items:</strong>
+                <p>{}</p>
+                <p><strong>Total: ${}</strong></p>
+                <p>Best Regards,</p>
+                """.format(user.name, order.id, order.name, line_str, order.amount_total)
+                template_obj = self.env['mail.mail']
+                template_data = {
+                    'subject': 'Purchase Order Approval Request: ' + order.name,
+                    'body_html': body,
+                    'email_from': "IT@asctherapeutics.com",
+                    'email_to': user.email_formatted
+                    }
+                template_id = template_obj.create(template_data)
+                template_obj.send(template_id)
 
     def button_approve(self, force=False):
         employee = self.env['hr.employee']
@@ -66,7 +68,9 @@ class PurchaseOrder(models.Model):
                     self.filtered(lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
             elif order.amount_total > 10000:
                 self.write({'approved_by': [(4, self.env.user.id)]})
-                if acc_manager in order.approved_by and department_head in order.approved_by and ceo in order.approved_by:
+                if acc_manager in order.approved_by and department_head in order.approved_by and ceo not in order.approved_by:
+                    self.send_confirmation([ceo])
+                elif acc_manager in order.approved_by and department_head in order.approved_by and ceo in order.approved_by:
                     self.write({'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
                     self.filtered(lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
         return {}
@@ -75,9 +79,9 @@ class PurchaseOrder(models.Model):
         employee = self.env['hr.employee']
         acc_manager = employee.search([('job_id','like','Accounting Manager')]).user_id
         ceo = employee.search([('job_id','like','CEO')]).user_id
-        department_head = employee.search(['&', ('category_ids','like','Department Head'), ('department_id', '=', order.user_id.employee_ids.department_id.name)]).user_id
 
         for order in self:
+            department_head = employee.search(['&', ('category_ids','like','Department Head'), ('department_id', '=', order.user_id.employee_ids.department_id.name)]).user_id
             if order.state not in ['draft', 'sent']:
                 continue
             order._add_supplier_to_product()
@@ -89,16 +93,16 @@ class PurchaseOrder(models.Model):
                     or order.user_has_groups('purchase.group_purchase_manager'):
                     order.button_approve()
                 else:
-                    email_list = [department_head.email_formatted]
-                    self.send_confirmation(email_list, department_head)
+                    mailing_users = [department_head]
+                    self.send_confirmation(mailing_users)
                     order.write({'state': 'to approve'})
             elif order.amount_total > 5000 and order.amount_total <= 10000:
-                email_list = [acc_manager.email_formatted, department_head.email_formatted]
-                self.send_confirmation(email_list, department_head)
+                mailing_users = [acc_manager, department_head]
+                self.send_confirmation(mailing_users)
                 order.write({'state': 'to approve'})
             elif order.amount_total > 10000:
-                email_list = [acc_manager.email_formatted, ceo.email_formatted, department_head.email_formatted]
-                self.send_confirmation(email_list, department_head)
+                mailing_users = [acc_manager, department_head]
+                self.send_confirmation(mailing_users)
                 order.write({'state': 'to approve'})
         return True
 
